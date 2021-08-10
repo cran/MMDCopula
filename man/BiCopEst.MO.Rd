@@ -9,10 +9,11 @@ BiCopEst.MO(
   u2,
   method,
   par.start = 0.5,
-  kernel = "gaussian.KG",
+  kernel = "gaussian.Phi",
   gamma = 0.95,
   alpha = 1,
   niter = 100,
+  C_eta = 1,
   ndrawings = 10,
   naveraging = 1
 )
@@ -50,7 +51,7 @@ BiCopEst.MO(
     \item \code{inv.l1}: \eqn{k(x,y) = 1/(1+\|\frac{x-y}{\gamma}\|_1)^\alpha
     }{k(x,y) = 1 / ( 1 + || (x-y) / gamma ||_1 )^\alpha}
   }
- Each of these names can receive the suffix ".KG", such as "gaussian.KG"
+ Each of these names can receive the suffix ".Phi", such as "gaussian.Phi"
  to indicates that the kernel \eqn{k(x,y)} is replaced by
  \eqn{k(\Phi^{-1}(x) , \Phi^{-1}(y))} where \eqn{\Phi^{-1}} denotes the quantile
  function of the standard Normal distribution.}
@@ -61,7 +62,17 @@ BiCopEst.MO(
 \item{alpha}{parameter \eqn{\alpha} to be used in the kernel, if any.
 (only used for \code{method = "MMD"})}
 
-\item{niter}{number of iterations of the stochastic gradient algorithm.
+\item{niter}{the stochastic gradient algorithm is composed of two phases:
+a first "burn-in" phase and a second "averaging" phase.
+If \code{niter} is of size \code{1}, the same number of iterations is used for
+both phases of the stochastic gradient algorithm. If \code{niter} is of size \code{2},
+then \code{niter[1]} iterations are done for the burn-in phase and \code{niter[2]}
+for the averaging phase.
+(only used for \code{method = "MMD"})}
+
+\item{C_eta}{a multiplicative constant controlling for the size of the gradient descent step.
+The step size is then computed as \code{C_eta / sqrt(i_iter)}
+where \code{i_iter} is the index of the current iteration of the stochastic gradient algorithm.
 (only used for \code{method = "MMD"})}
 
 \item{ndrawings}{number of replicas of the stochastic estimate of the gradient
@@ -72,12 +83,15 @@ drawn at each step. The gradient is computed using the average of these replicas
 that are averaged at the end to give the final estimated parameter.
 (only used for \code{method = "MMD"})}
 }
+\value{
+the estimated parameter (\code{alpha}) of the Marshall-Olkin copula.
+}
 \description{
 Estimation of Marshall-Olkin copulas
 }
 \examples{
 U <- BiCopSim.MO(n = 1000, alpha = 0.2)
-estimatedPar <- BiCopEst.MO(u1 = U[,1], u2 = U[,2], method = "MMD",niter = 1, ndrawings = 1)
+estimatedPar <- BiCopEst.MO(u1 = U[,1], u2 = U[,2], method = "MMD", niter = 1, ndrawings = 1)
 \donttest{
 estimatedPar <- BiCopEst.MO(u1 = U[,1], u2 = U[,2], method = "MMD")
 }

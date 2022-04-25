@@ -40,18 +40,18 @@ BiCopEst.MO(
   it can be a function taking in parameter \code{(u1, u2, v1, v2, gamma, alpha)}
   or a name giving the kernel to use in the list:
   \itemize{
-    \item \code{gaussian}: Gaussian kernel \eqn{k(x,y) = \exp(-\|\frac{x-y}{\gamma}\|_2^2)
+    \item \code{"gaussian"}: Gaussian kernel \eqn{k(x,y) = \exp(-\|\frac{x-y}{\gamma}\|_2^2)
     }{k(x,y) = exp( - || (x-y) / gamma ||_2^2)}
-    \item \code{exp.l2}: \eqn{k(x,y) = \exp(-\|\frac{x-y}{\gamma}\|_2)
+    \item \code{"exp-l2"}: \eqn{k(x,y) = \exp(-\|\frac{x-y}{\gamma}\|_2)
     }{k(x,y) = exp( - || (x-y) / gamma ||_2)}
-    \item \code{exp.l1}: \eqn{k(x,y) = \exp(-\|\frac{x-y}{\gamma}\|_1)
+    \item \code{"exp-l1"}: \eqn{k(x,y) = \exp(-\|\frac{x-y}{\gamma}\|_1)
     }{k(x,y) = exp( - || (x-y) / gamma ||_1)}
-    \item \code{inv.l2}: \eqn{k(x,y) = 1/(1+\|\frac{x-y}{\gamma}\|_2)^\alpha
+    \item \code{"inv-l2"}: \eqn{k(x,y) = 1/(1+\|\frac{x-y}{\gamma}\|_2)^\alpha
     }{k(x,y) = 1 / ( 1 + || (x-y) / gamma ||_2 )^\alpha}
-    \item \code{inv.l1}: \eqn{k(x,y) = 1/(1+\|\frac{x-y}{\gamma}\|_1)^\alpha
+    \item \code{"inv-l1"}: \eqn{k(x,y) = 1/(1+\|\frac{x-y}{\gamma}\|_1)^\alpha
     }{k(x,y) = 1 / ( 1 + || (x-y) / gamma ||_1 )^\alpha}
   }
- Each of these names can receive the suffix ".Phi", such as "gaussian.Phi"
+ Each of these names can receive the suffix \code{".Phi"}, such as \code{"gaussian.Phi"}
  to indicates that the kernel \eqn{k(x,y)} is replaced by
  \eqn{k(\Phi^{-1}(x) , \Phi^{-1}(y))} where \eqn{\Phi^{-1}} denotes the quantile
  function of the standard Normal distribution.}
@@ -98,9 +98,9 @@ estimatedPar <- BiCopEst.MO(u1 = U[,1], u2 = U[,2], method = "MMD")
 
 }
 \references{
-Alquier, P., Chérief-Abdellatif, B.-E., Derumigny, A., and Fermanian, J.D. (2020).
+Alquier, P., Chérief-Abdellatif, B.-E., Derumigny, A., and Fermanian, J.D. (2022).
 Estimation of copulas via Maximum Mean Discrepancy.
-ArXiv preprint \href{https://arxiv.org/abs/2010.00408}{arxiv:2010.00408}
+Journal of the American Statistical Association, \doi{10.1080/01621459.2021.2024836}.
 }
 \seealso{
 \code{\link{BiCopSim.MO}} for the estimation of

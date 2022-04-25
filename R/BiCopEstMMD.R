@@ -21,6 +21,9 @@
 #'
 #' @param par2 initial value for the second parameter, if any. (Works only for Student copula).
 #'
+#' @param gamma parameter \eqn{\gamma} to be used in the kernel.
+#' If \code{gamma="default"}, a default value is used.
+#'
 #' @param niter the stochastic gradient algorithm is composed of two phases:
 #' a first "burn-in" phase and a second "averaging" phase.
 #' If \code{niter} is of size \code{1}, the same number of iterations is used for
@@ -43,15 +46,15 @@
 #' \code{\link{BiCopGradMMD}()} for the computation of the stochastic gradient.
 #' \code{\link{BiCopEst.MO}} for the estimation of Marshall-Olkin copulas by MMD.
 #'
-#' @references Alquier, P., Chérief-Abdellatif, B.-E., Derumigny, A., and Fermanian, J.D. (2020).
+#' @references Alquier, P., Chérief-Abdellatif, B.-E., Derumigny, A., and Fermanian, J.D. (2022).
 #' Estimation of copulas via Maximum Mean Discrepancy.
-#' ArXiv preprint \href{https://arxiv.org/abs/2010.00408}{arxiv:2010.00408}
+#' Journal of the American Statistical Association, \doi{10.1080/01621459.2021.2024836}.
 #'
 #'
 #' @examples
 #' # Estimation of a bivariate Gaussian copula with correlation 0.5.
 #' dataSampled = VineCopula::BiCopSim(N = 500, family = 1, par = 0.5)
-#' estimator = BiCopEstMMD(u1 = dataSampled[,1], u2 = dataSampled[,2], family = 1, niter=10)
+#' estimator = BiCopEstMMD(u1 = dataSampled[,1], u2 = dataSampled[,2], family = 1, niter = 10)
 #' estimator$par
 #'
 #' \donttest{
@@ -92,11 +95,18 @@
 BiCopEstMMD <- function(
   u1, u2,
   family, tau = NULL, par = NULL, par2 = NULL,
-  kernel = "gaussian", gamma=0.23, alpha=1,
-  niter= 100, C_eta = 1, epsilon=0.0001,
-  method = "QMCV", quasiRNG = "sobol", ndrawings=10)
+  kernel = "gaussian", gamma = "default", alpha = 1,
+  niter = 100, C_eta = 1, epsilon = 0.0001,
+  method = "QMCV", quasiRNG = "sobol", ndrawings = 10)
 {
+  # Checking for input validity
   verifData(u1, u2)
+
+  if (!is.finite(alpha)){stop("Finite value for 'alpha' required.")}
+  if (!is.finite(epsilon)){stop("Finite value for 'epsilon' required.")}
+  if (!is.finite(niter)){stop("Finite value for 'niter' required.")}
+  if (!is.finite(C_eta)){stop("Finite value for 'C_eta' required.")}
+  if (!is.finite(ndrawings)){stop("Finite value for 'ndrawings' required.")}
 
   # Choice of the kernel
   if (is.character(kernel))
@@ -106,12 +116,31 @@ BiCopEstMMD <- function(
     kernelFun <- kernel
   }
 
+  # Choice of gamma
+  if (gamma == "default"){
+    if (family == 1 || family == 5){
+      if (kernel %in% c("gaussian", "exp-l2", "exp-l1", "inv-l2", "inv-l1")){
+        gamma = 0.25
+      } else {
+        gamma = 0.8
+      }
+    } else {
+      if (kernel %in% c("gaussian", "exp-l2", "exp-l1", "inv-l2", "inv-l1")){
+        gamma = 0.1
+      } else {
+        gamma = 0.4
+      }
+    }
+  } else {
+    if (!is.finite(gamma)){stop("Finite value for 'gamma' required.")}
+  }
+
   # If only one number of iterations is given,
   # it is reused for the burn-in phase and the averaging phase
   niter = rep(niter, length.out = 2)
   if (is.null(tau)){
     # We try a random guess
-    # tau = pcaPP::cor.fk(u1, u2)
+    # tau = wdm::wdm(u1, u2, method = "kendall")
     if (family %in% c(1, 5, 6,16,26,36)){
       tau = stats::runif(n = 1, min = -0.95, max = 0.95)
     } else if (family %in% c(3, 23, 4, 24)){
@@ -261,7 +290,7 @@ BiCopEstMMD.QMCV.student <- function(
   kernelFun, gamma, alpha, epsilon,
   quasiRNGFun, ndrawings, niter, C_eta)
 {
-  par = VineCopula::BiCopTau2Par(family = 2, tau = pcaPP::cor.fk(u1, u2))
+  par = VineCopula::BiCopTau2Par(family = 2, tau = wdm::wdm(u1, u2, method = "kendall"))
 
   # 1- Burn-in phase
   paramIter = c(par, par2)
